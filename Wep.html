@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AHP & MOORA Calculator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      margin: 0;
+      padding: 20px;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3 {
+      text-align: center;
+      color: #93c5fd;
+    }
+
+    .container {
+      background: rgba(30, 41, 59, 0.9);
+      max-width: 900px;
+      margin: auto;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+    }
+
+    label {
+      font-weight: 500;
+      margin-right: 8px;
+    }
+
+    input[type="number"], input[type="text"] {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      margin: 5px 0;
+      width: 100px;
+      background-color: #1e293b;
+      color: #f8fafc;
+    }
+
+    button {
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      margin: 10px 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.25s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      transform: scale(1.05);
+      box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 16px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid #334155;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #1e40af;
+      color: #e0f2fe;
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: #1e293b;
+    }
+
+    tr:nth-child(odd) {
+      background-color: #0f172a;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .menu {
+      text-align: center;
+      padding: 60px 0;
+    }
+
+    .menu h2 {
+      color: #93c5fd;
+      font-size: 24px;
+      margin-bottom: 30px;
+    }
+
+    p {
+      color: #cbd5e1;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container fade-in">
+
+    <!-- Menu Awal -->
+    <div id="menuAwal" class="menu">
+      <h2>Selamat Datang di <br>AHP & MOORA Calculator</h2>
+      <p>Pilih metode yang ingin digunakan:</p>
+      <button onclick="bukaHalaman('ahp')">Mulai AHP</button>
+      <button onclick="bukaHalaman('moora')">Mulai MOORA</button>
+    </div>
+
+    <!-- Halaman AHP -->
+    <div id="halamanAHP" class="hidden fade-in">
+      <h1>Perhitungan AHP</h1>
+      <div style="text-align:center;">
+        <label>Jumlah Kriteria:</label>
+        <input type="number" id="jmlKriteria" min="2" value="3">
+        <button onclick="generateAHP()">Buat Matriks</button>
+        <button onclick="resetAHP()">Reset</button>
+        <button onclick="kembaliKeMenu()">Kembali</button>
+      </div>
+      <div id="matriksAHP"></div>
+      <div id="hasilAHP"></div>
+    </div>
+
+    <!-- Halaman MOORA -->
+    <div id="halamanMOORA" class="hidden fade-in">
+      <h1>Perhitungan MOORA</h1>
+      <div style="text-align:center;">
+        <label>Jumlah Kriteria:</label>
+        <input type="number" id="jmlKriteriaM" min="2" value="3">
+        <label>Jumlah Alternatif:</label>
+        <input type="number" id="jmlAlternatifM" min="2" value="3">
+        <button onclick="generateMOORA()">Buat Matriks</button>
+        <button onclick="resetMOORA()">Reset</button>
+        <button onclick="kembaliKeMenu()">Kembali</button>
+      </div>
+      <div id="matriksMOORA"></div>
+      <div id="hasilMOORA"></div>
+    </div>
+
+  </div>
+
+  <script>
+    function bukaHalaman(hal) {
+      document.getElementById('menuAwal').classList.add('hidden');
+      document.getElementById('halamanAHP').classList.add('hidden');
+      document.getElementById('halamanMOORA').classList.add('hidden');
+      if (hal === 'ahp') document.getElementById('halamanAHP').classList.remove('hidden');
+      if (hal === 'moora') document.getElementById('halamanMOORA').classList.remove('hidden');
+    }
+
+    function kembaliKeMenu() {
+      document.getElementById('halamanAHP').classList.add('hidden');
+      document.getElementById('halamanMOORA').classList.add('hidden');
+      document.getElementById('menuAwal').classList.remove('hidden');
+    }
+
+    // --- AHP ---
+    function generateAHP() {
+      const nKriteria = parseInt(document.getElementById('jmlKriteria').value);
+      let htmlAHP = `<h3>Matriks Perbandingan Berpasangan</h3><table><tr><th></th>`;
+      for (let i = 1; i <= nKriteria; i++) htmlAHP += `<th>K${i}</th>`;
+      htmlAHP += '</tr>';
+      for (let i = 1; i <= nKriteria; i++) {
+        htmlAHP += `<tr><th>K${i}</th>`;
+        for (let j = 1; j <= nKriteria; j++) {
+          htmlAHP += `<td><input type='number' id='ahp-${i}-${j}' value='${i===j?1:""}'></td>`;
+        }
+        htmlAHP += '</tr>';
+      }
+      htmlAHP += `</table><button onclick='hitungAHP(${nKriteria})'>Hitung AHP</button>`;
+      document.getElementById('matriksAHP').innerHTML = htmlAHP;
+      document.getElementById('hasilAHP').innerHTML = '';
+    }
+
+    function hitungAHP(n) {
+      const matriks = [];
+      for (let i = 0; i < n; i++) {
+        matriks[i] = [];
+        for (let j = 0; j < n; j++) {
+          matriks[i][j] = parseFloat(document.getElementById(`ahp-${i+1}-${j+1}`).value) || 0;
+        }
+      }
+
+      const jumlahKolom = Array(n).fill(0);
+      for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) jumlahKolom[j] += matriks[i][j];
+
+      const normalisasi = matriks.map(row => row.map((val, j) => val / jumlahKolom[j]));
+      const bobot = normalisasi.map(row => row.reduce((a, b) => a + b, 0) / n);
+
+      let html = `<h3>Hasil AHP (Bobot Kriteria)</h3><table><tr><th>Kriteria</th><th>Bobot</th></tr>`;
+      for (let i = 0; i < n; i++) html += `<tr><td>K${i+1}</td><td>${bobot[i].toFixed(3)}</td></tr>`;
+      html += '</table>';
+      document.getElementById('hasilAHP').innerHTML = html;
+    }
+
+    function resetAHP() {
+      document.getElementById('matriksAHP').innerHTML = '';
+      document.getElementById('hasilAHP').innerHTML = '';
+      document.getElementById('jmlKriteria').value = 3;
+    }
+
+    // --- MOORA ---
+    function generateMOORA() {
+      const nKriteria = parseInt(document.getElementById('jmlKriteriaM').value);
+      const nAlternatif = parseInt(document.getElementById('jmlAlternatifM').value);
+
+      let htmlMOORA = `<h3>Matriks Keputusan</h3><table><tr><th>Alternatif</th>`;
+      for (let i = 1; i <= nKriteria; i++) htmlMOORA += `<th>K${i}</th>`;
+      htmlMOORA += '</tr>';
+      for (let i = 1; i <= nAlternatif; i++) {
+        htmlMOORA += `<tr><th>A${i}</th>`;
+        for (let j = 1; j <= nKriteria; j++) {
+          htmlMOORA += `<td><input type='number' id='moora-${i}-${j}'></td>`;
+        }
+        htmlMOORA += '</tr>';
+      }
+      htmlMOORA += `</table><button onclick='hitungMOORA(${nAlternatif},${nKriteria})'>Hitung MOORA</button>`;
+      document.getElementById('matriksMOORA').innerHTML = htmlMOORA;
+      document.getElementById('hasilMOORA').innerHTML = '';
+    }
+
+    function hitungMOORA(alt, kri) {
+      const data = [], hasil = [];
+      for (let i = 0; i < alt; i++) {
+        data[i] = [];
+        for (let j = 0; j < kri; j++) {
+          data[i][j] = parseFloat(document.getElementById(`moora-${i+1}-${j+1}`).value) || 0;
+        }
+      }
+
+      const pembagi = Array(kri).fill(0);
+      for (let j = 0; j < kri; j++) for (let i = 0; i < alt; i++) pembagi[j] += data[i][j] ** 2;
+      for (let j = 0; j < kri; j++) pembagi[j] = Math.sqrt(pembagi[j]);
+
+      const normal = data.map(row => row.map((val, j) => val / pembagi[j]));
+      const skor = normal.map(row => row.reduce((a, b) => a + b, 0));
+
+      for (let i = 0; i < alt; i++) hasil.push({ alt: `A${i+1}`, skor: skor[i] });
+      hasil.sort((a, b) => b.skor - a.skor);
+
+      let html = `<h3>Hasil MOORA</h3><table><tr><th>Peringkat</th><th>Alternatif</th><th>Nilai</th></tr>`;
+      hasil.forEach((h, i) => {
+        html += `<tr><td>${i + 1}</td><td>${h.alt}</td><td>${h.skor.toFixed(3)}</td></tr>`;
+      });
+      html += '</table>';
+      document.getElementById('hasilMOORA').innerHTML = html;
+    }
+
+    function resetMOORA() {
+      document.getElementById('matriksMOORA').innerHTML = '';
+      document.getElementById('hasilMOORA').innerHTML = '';
+      document.getElementById('jmlKriteriaM').value = 3;
+      document.getElementById('jmlAlternatifM').value = 3;
+    }
+  </script>
+</body>
+</html>
